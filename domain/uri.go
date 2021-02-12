@@ -22,5 +22,5 @@ type URI struct {
 }
 
 func (u *URI) String() string {
-	return fmt.Sprintf("%v?fsym=%v&tsym=%v", u.host, strings.ToUpper(u.fsym), strings.ToLower(u.tsym))
+	return fmt.Sprintf("%v?fsyms=%v&tsyms=%v", u.host, strings.ToUpper(u.fsym), strings.ToLower(u.tsym))
 }

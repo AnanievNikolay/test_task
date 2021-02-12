@@ -1,8 +1,10 @@
 package websocket
 
 import (
+	"log"
 	"sync"
 
+	"github.com/AnanievNikolay/test_task/app/servers/websocket/connection"
 	"golang.org/x/net/websocket"
 )
 
@@ -11,7 +13,7 @@ func NewPool() *Pool {
 	return &Pool{
 		connections: make(map[string]*websocket.Conn),
 		mutex:       &sync.Mutex{},
-		connChan:    make(chan *Connection, 1000),
+		connChan:    make(chan *connection.Connection, 1000),
 		disconnChan: make(chan string, 1000),
 	}
 }
@@ -20,19 +22,29 @@ func NewPool() *Pool {
 type Pool struct {
 	connections map[string]*websocket.Conn
 	mutex       *sync.Mutex
-	connChan    chan *Connection
+	connChan    chan *connection.Connection
 	disconnChan chan string
 }
 
-//Connect ...
-func (p *Pool) Connect(_ip string, _conn *websocket.Conn) {
+//Notify ...
+func (p *Pool) Notify(msg []byte) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	for _, conn := range p.connections {
+		_, err := conn.Write(msg)
+		if err != nil {
+			log.Printf("[Error] Error while send message to WS. Host:%v. Error:%v", conn.RemoteAddr().String(), err.Error())
+		}
+	}
+}
+
+func (p *Pool) connect(_ip string, _conn *websocket.Conn) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	p.connections[_ip] = _conn
 }
 
-//Disconnect ...
-func (p *Pool) Disconnect(_ip string) {
+func (p *Pool) disconnect(_ip string) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	delete(p.connections, _ip)
@@ -44,7 +56,7 @@ func (p *Pool) DisconnectChannel() chan string {
 }
 
 //ConnectChannel ...
-func (p *Pool) ConnectChannel() chan *Connection {
+func (p *Pool) ConnectChannel() chan *connection.Connection {
 	return p.connChan
 }
 
@@ -54,11 +66,11 @@ func (p *Pool) Listen() {
 		select {
 		case conn := <-p.connChan:
 			{
-				p.Connect(conn.ip, conn.conn)
+				p.connect(conn.IP, conn.Connection)
 			}
 		case key := <-p.disconnChan:
 			{
-				p.Disconnect(key)
+				p.disconnect(key)
 			}
 		}
 	}

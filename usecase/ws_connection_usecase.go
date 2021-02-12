@@ -3,6 +3,7 @@ package usecase
 import (
 	"encoding/json"
 	"log"
+	"strings"
 
 	"github.com/AnanievNikolay/test_task/app/configuration"
 	"github.com/AnanievNikolay/test_task/domain"
@@ -25,10 +26,10 @@ type WSConnectionUseCase struct {
 
 //Execute ...
 func (usecase *WSConnectionUseCase) Execute() {
-	host := configuration.ServiceConfig().ExternalHost
+	host := configuration.ServiceConfig().ExternalAPIHost
 	fsyms := configuration.Settings().Fsym
 	tsyms := configuration.Settings().Tsym
-	response := NewPriceRequest(domain.NewClient(host, fsyms, tsyms)).Response()
+	response := NewPriceRequest(domain.NewClient(host, strings.Join(fsyms, ","), strings.Join(tsyms, ","))).Response()
 	jMess, jerr := json.Marshal(response)
 	if jerr != nil {
 		log.Println("[Error] Error while marshaling response. Error: ", jerr.Error())

@@ -6,7 +6,7 @@ import (
 
 	"github.com/AnanievNikolay/test_task/app/configuration"
 	"github.com/AnanievNikolay/test_task/domain"
-	"github.com/AnanievNikolay/test_task/presentation/usecase"
+	"github.com/AnanievNikolay/test_task/usecase"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +19,7 @@ type Controller struct {
 func (c *Controller) Price(ctx *gin.Context) {
 	fsyms := ctx.Query("fsyms")
 	tsyms := ctx.Query("tsyms")
-	host := configuration.ServiceConfig().ExternalHost
+	host := configuration.ServiceConfig().ExternalAPIHost
 	response := usecase.NewPriceRequest(domain.NewClient(host, fsyms, tsyms)).Response()
 	if response == nil {
 		log.Println("[Controller | Price] Not found!")

@@ -1,6 +1,8 @@
 package repository
 
+import "github.com/AnanievNikolay/test_task/presentation/model"
+
 //IRepository ...
 type IRepository interface {
-	Save() bool
+	Save(*model.ExternalAPIResponse) bool
 }

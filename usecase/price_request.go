@@ -22,20 +22,20 @@ type PriceRequest struct {
 }
 
 //Response ...
-func (usecase *PriceRequest) Response() *model.ExternalApiResponse {
+func (usecase *PriceRequest) Response() *model.ExternalAPIResponse {
 	respModel := usecase.unmarshalJSON(usecase.client.Response())
-	if reflect.DeepEqual(respModel, &model.ExternalApiResponse{}) {
+	if reflect.DeepEqual(respModel, &model.ExternalAPIResponse{}) {
 		log.Println("[PriceUseCase | Response] Empty model from usecase.")
 		return nil
 	}
 	return respModel
 }
 
-func (usecase *PriceRequest) unmarshalJSON(_json string) *model.ExternalApiResponse {
-	obj := &model.ExternalApiResponse{}
+func (usecase *PriceRequest) unmarshalJSON(_json string) *model.ExternalAPIResponse {
+	obj := &model.ExternalAPIResponse{}
 	err := json.Unmarshal([]byte(_json), obj)
 	if err != nil {
-		log.Println("[PriceUseCase | unmarshalJSON] Error whhile unmarshal. Json: ", _json)
+		log.Println("[PriceUseCase | unmarshalJSON] Error whhile unmarshal. Error: ", err.Error())
 	}
 	return obj
 }

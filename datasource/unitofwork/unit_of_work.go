@@ -6,7 +6,17 @@ import (
 	"sync"
 
 	"github.com/AnanievNikolay/test_task/datasource/repository"
+	"github.com/AnanievNikolay/test_task/presentation/model"
 )
+
+//New ..
+func New(_repository repository.IRepository) IUnitOfWork {
+	return &UnitOfWork{
+		dirty:      list.New(),
+		repository: _repository,
+		mutex:      &sync.Mutex{},
+	}
+}
 
 //UnitOfWork ...
 type UnitOfWork struct {
@@ -16,7 +26,7 @@ type UnitOfWork struct {
 }
 
 //NewDirty ...
-func (uow *UnitOfWork) NewDirty(_dirty interface{}) {
+func (uow *UnitOfWork) NewDirty(_dirty *model.ExternalAPIResponse) {
 	uow.mutex.Lock()
 	defer uow.mutex.Unlock()
 	uow.dirty.PushBack(_dirty)
@@ -26,9 +36,12 @@ func (uow *UnitOfWork) NewDirty(_dirty interface{}) {
 func (uow *UnitOfWork) Commit() {
 	uow.mutex.Lock()
 	defer uow.mutex.Unlock()
-	if !uow.repository.Save() {
-		log.Println("[UnitOfWork] Something went wrong wile commit")
-		return
+	for el := uow.dirty.Front(); el != nil; el = el.Next() {
+		if uow.repository.Save(el.Value.(*model.ExternalAPIResponse)) {
+			uow.dirty.Remove(el)
+		} else {
+			log.Println("[Error] Something went wrong while commit")
+			return
+		}
 	}
-	uow.dirty = list.New()
 }
