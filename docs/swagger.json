@@ -1,0 +1,80 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/service/price": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns cryptocurrency quotes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "fsyms",
+                        "name": "fsyms",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "tsyms",
+                        "name": "tsyms",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ExternalAPIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "model.Currency": {
+            "type": "object",
+            "properties": {
+                "CHANGE24HOUR": {
+                    "type": "string"
+                },
+                "CHANGEPCT24HOUR": {
+                    "type": "string"
+                },
+                "HIGH24HOUR": {
+                    "type": "string"
+                },
+                "LOW24HOUR": {
+                    "type": "string"
+                },
+                "MKTCAP": {
+                    "type": "string"
+                },
+                "OPEN24HOUR": {
+                    "type": "string"
+                },
+                "PRICE": {
+                    "type": "string"
+                },
+                "SUPPLY": {
+                    "type": "string"
+                },
+                "VOLUME24HOUR": {
+                    "type": "string"
+                },
+                "VOLUME24HOURTO": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

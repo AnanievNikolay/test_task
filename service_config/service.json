@@ -1,0 +1,8 @@
+{
+    "ExternalAPIHost":"https://min-api.cryptocompare.com/data/pricemultifull",
+	"MySQLConnectionString":"NikAnaniev:123456@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True",
+	"ServiceHost":"",
+	"ServicePort":8080,
+	"WSPort":80,
+    "SchedulerDurationSec":300
+}

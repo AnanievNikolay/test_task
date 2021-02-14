@@ -1,2 +1,2 @@
 # test_task
-Recruitment Boutique SMArt
+Recruitment Boutique Smart
