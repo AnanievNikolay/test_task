@@ -2,8 +2,10 @@ package service
 
 import (
 	"log"
+	"os"
 
 	"github.com/AnanievNikolay/test_task/app/configuration"
+	"github.com/AnanievNikolay/test_task/app/file"
 	"github.com/AnanievNikolay/test_task/app/servers/http"
 	"github.com/AnanievNikolay/test_task/app/servers/websocket"
 	"github.com/AnanievNikolay/test_task/app/servers/websocket/interfaces"
@@ -15,19 +17,20 @@ import (
 
 //New ...
 func New() *Service {
+	serviceConfig := configuration.NewServiceConfig(file.NewPath(os.Args[0], "/service_config/service.json"))
+	settings := configuration.NewSettings(file.NewPath(os.Args[0], "/service_config/settings.yaml"))
 	pool := websocket.NewPool()
-	host := configuration.ServiceConfig().ServiceHost
-	port := configuration.ServiceConfig().ServicePort
-	repository := repository.NewMySQLRepository(configuration.ServiceConfig().MySQLConnectionString)
+	repository := repository.NewMySQLRepository(serviceConfig.ConnectionString())
 	uow := unitofwork.New(repository)
-	wsServer := websocket.New(host, port, pool.ConnectChannel(), pool.DisconnectChannel())
-	job := usecase.NewSchedulerJob(pool, uow)
-	scheduler := domain.NewScheduler(configuration.ServiceConfig().SchedulerDuration, job)
+	wsServer := websocket.New(serviceConfig, settings, pool.ConnectChannel(), pool.DisconnectChannel())
+	client := domain.NewClient(serviceConfig.ExternalAPI(), settings.Fsyms(), settings.Tsyms())
+	job := usecase.NewSchedulerJob(client, pool, uow)
+	scheduler := domain.NewScheduler(serviceConfig.Duration(), job)
 	return &Service{
 		wsServer:   wsServer,
-		uow:        unitofwork.New(repository),
+		uow:        uow,
 		pool:       pool,
-		httpServer: http.New(),
+		httpServer: http.New(serviceConfig),
 		scheduler:  scheduler,
 	}
 }
@@ -41,6 +44,7 @@ type Service struct {
 	scheduler  domain.ISceduler
 }
 
+//Start ...
 func (s *Service) Start() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -49,5 +53,6 @@ func (s *Service) Start() {
 	}()
 	go s.wsServer.Start()
 	go s.pool.Listen()
-	s.scheduler.Start()
+	go s.scheduler.Start()
+	s.httpServer.Start()
 }

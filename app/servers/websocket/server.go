@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/AnanievNikolay/test_task/app/configuration"
 	"github.com/AnanievNikolay/test_task/app/servers/websocket/connection"
@@ -14,11 +13,10 @@ import (
 )
 
 //New ...
-func New(_host string, _port int, _connChan chan *connection.Connection, _disconnChan chan string) *Server {
+func New(_config configuration.IServiceConfig, _settinggs configuration.ISettings, _connChan chan *connection.Connection, _disconnChan chan string) *Server {
 	return &Server{
-		host:        _host,
-		port:        _port,
-		route:       "/ws",
+		config:      _config,
+		settings:    _settinggs,
 		connChan:    _connChan,
 		disconnChan: _disconnChan,
 	}
@@ -26,18 +24,17 @@ func New(_host string, _port int, _connChan chan *connection.Connection, _discon
 
 //Server ...
 type Server struct {
-	host        string
-	port        int
-	route       string
+	config      configuration.IServiceConfig
+	settings    configuration.ISettings
 	connChan    chan *connection.Connection
 	disconnChan chan string
 }
 
 //Start ..
 func (s *Server) Start() {
-	http.Handle(s.route, websocket.Handler(s.connectionHandler))
+	http.Handle("/ws", websocket.Handler(s.connectionHandler))
 	log.Println("Websocket server started")
-	err := http.ListenAndServe(fmt.Sprintf("%v:%v", s.host, s.port), nil)
+	err := http.ListenAndServe(fmt.Sprintf("%v:%v", s.config.Host(), s.config.WebsocketPort()), nil)
 	if err != nil {
 		log.Fatal("Websocket server fatal: ", err)
 	}
@@ -53,10 +50,7 @@ func (s *Server) connectionHandler(ws *websocket.Conn) {
 	newConnection := connection.NewConnection(ws.RemoteAddr().String(), ws)
 	log.Println("Received new connection from ", ws.RemoteAddr().String())
 	s.connChan <- newConnection
-	host := configuration.ServiceConfig().ExternalAPIHost
-	fsyms := configuration.Settings().Fsym
-	tsyms := configuration.Settings().Tsym
-	client := domain.NewClient(host, strings.Join(fsyms, ","), strings.Join(tsyms, ","))
+	client := domain.NewClient(s.config.ExternalAPI(), s.settings.Fsyms(), s.settings.Tsyms())
 	usecase.NewWSConnectionUseCase(ws, client).Execute()
 	defer func() {
 		log.Println("Client disconnected. Host : ", ws.RemoteAddr().String())

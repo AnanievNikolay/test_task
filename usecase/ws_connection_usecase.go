@@ -3,9 +3,7 @@ package usecase
 import (
 	"encoding/json"
 	"log"
-	"strings"
 
-	"github.com/AnanievNikolay/test_task/app/configuration"
 	"github.com/AnanievNikolay/test_task/domain"
 	"golang.org/x/net/websocket"
 )
@@ -13,7 +11,8 @@ import (
 //NewWSConnectionUseCase ...
 func NewWSConnectionUseCase(_conn *websocket.Conn, _client domain.IClient) *WSConnectionUseCase {
 	return &WSConnectionUseCase{
-		conn: _conn,
+		conn:   _conn,
+		client: _client,
 	}
 
 }
@@ -26,10 +25,7 @@ type WSConnectionUseCase struct {
 
 //Execute ...
 func (usecase *WSConnectionUseCase) Execute() {
-	host := configuration.ServiceConfig().ExternalAPIHost
-	fsyms := configuration.Settings().Fsym
-	tsyms := configuration.Settings().Tsym
-	response := NewPriceRequest(domain.NewClient(host, strings.Join(fsyms, ","), strings.Join(tsyms, ","))).Response()
+	response := NewPriceRequest(usecase.client).Response()
 	jMess, jerr := json.Marshal(response)
 	if jerr != nil {
 		log.Println("[Error] Error while marshaling response. Error: ", jerr.Error())

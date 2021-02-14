@@ -3,35 +3,32 @@ package usecase
 import (
 	"encoding/json"
 	"log"
-	"strings"
 	"time"
 
-	"github.com/AnanievNikolay/test_task/app/configuration"
 	"github.com/AnanievNikolay/test_task/app/servers/websocket/interfaces"
 	"github.com/AnanievNikolay/test_task/datasource/unitofwork"
 	"github.com/AnanievNikolay/test_task/domain"
 )
 
 //NewSchedulerJob ...
-func NewSchedulerJob(_pool interfaces.IPool, _uow unitofwork.IUnitOfWork) *SchedulerJob {
+func NewSchedulerJob(_client domain.IClient, _pool interfaces.IPool, _uow unitofwork.IUnitOfWork) *SchedulerJob {
 	return &SchedulerJob{
-		pool: _pool,
-		uow:  _uow,
+		pool:   _pool,
+		uow:    _uow,
+		client: _client,
 	}
 }
 
 //SchedulerJob ...
 type SchedulerJob struct {
-	pool interfaces.IPool
-	uow  unitofwork.IUnitOfWork
+	pool   interfaces.IPool
+	uow    unitofwork.IUnitOfWork
+	client domain.IClient
 }
 
 //Execute ...
 func (job *SchedulerJob) Execute() {
-	host := configuration.ServiceConfig().ExternalAPIHost
-	fsyms := configuration.Settings().Fsym
-	tsyms := configuration.Settings().Tsym
-	response := NewPriceRequest(domain.NewClient(host, strings.Join(fsyms, ","), strings.Join(tsyms, ","))).Response()
+	response := NewPriceRequest(job.client).Response()
 	job.uow.NewDirty(response)
 	jMess, jerr := json.Marshal(response)
 	if jerr != nil {

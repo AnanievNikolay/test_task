@@ -1,0 +1,51 @@
+definitions:
+  model.Currency:
+    properties:
+      CHANGE24HOUR:
+        type: string
+      CHANGEPCT24HOUR:
+        type: string
+      HIGH24HOUR:
+        type: string
+      LOW24HOUR:
+        type: string
+      MKTCAP:
+        type: string
+      OPEN24HOUR:
+        type: string
+      PRICE:
+        type: string
+      SUPPLY:
+        type: string
+      VOLUME24HOUR:
+        type: string
+      VOLUME24HOURTO:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /service/price:
+    get:
+      parameters:
+      - description: fsyms
+        in: query
+        name: fsyms
+        required: true
+        type: string
+      - description: tsyms
+        in: query
+        name: tsyms
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ExternalAPIResponse'
+        "404":
+          description: ""
+      summary: Returns cryptocurrency quotes
+swagger: "2.0"
